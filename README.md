@@ -4,15 +4,9 @@
 
 ### Role-Based · Secure · Full-Stack ASP.NET Core MVC Application
 
-![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-10.0-4CAF50?style=for-the-badge)
-![SQLite](https://img.shields.io/badge/Database-SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
-![Identity](https://img.shields.io/badge/Auth-ASP.NET%20Identity-005571?style=for-the-badge)
-![Bootstrap](https://img.shields.io/badge/UI-Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-
 TaskFlow is a role-based Employee Management System that lets **Admins** manage employees, assign and track tasks, and approve leave — while **Employees** get a scoped, permission-limited workspace to manage their own tasks and leave requests. Authorization is enforced at the controller level with ASP.NET Core Identity, and all business data is modeled relationally through EF Core.
+
+🚀 **[Live Demo →](https://taskflow-shreyas-svd2026-c9bbcsezbmbjbvbu.centralindia-01.azurewebsites.net/)**
 
 </div>
 
@@ -26,10 +20,10 @@ TaskFlow is a role-based Employee Management System that lets **Admins** manage 
 - [Security Model — Role-Based Authorization](#-security-model--role-based-authorization)
 - [Authentication Flow](#-authentication-flow)
 - [Dashboard Aggregation Flow](#-dashboard-aggregation-flow)
-- [Screenshots](#-screenshots)
 - [Key Engineering Decisions](#-key-engineering-decisions)
 - [Challenges & Solutions](#-challenges--solutions)
 - [Time Investment](#-time-investment)
+- [Live Deployment](#-live-deployment)
 - [Local Setup](#-local-setup)
 - [Project Structure](#-project-structure)
 - [What This Project Demonstrates](#-what-this-project-demonstrates)
@@ -215,30 +209,6 @@ Counts across ALL:          Counts scoped to
 
 ---
 
-## 🖼 Screenshots
-
-### Admin Dashboard
-Live counts for employees, tasks, and leave requests, plus recent activity feeds.
-
-![Admin Dashboard](screenshots/admin-dashboard.png)
-
-### Task Management
-Create, assign, filter, and update tasks by priority, status, and due date.
-
-![Manage Tasks](screenshots/manage-tasks.png)
-
-### Leave Request Management
-Search, filter, and approve/reject employee leave requests with an admin comment.
-
-![Manage Leave Requests](screenshots/manage-leave-requests.png)
-
-### Profile Management
-Update personal details or change password securely.
-
-![Edit Profile](screenshots/edit-profile.png)
-
----
-
 ## 🧠 Key Engineering Decisions
 
 | Decision | Rationale |
@@ -297,6 +267,16 @@ Seeding + Testing + Docs         ──────────  2 hours
                                  ─────────────────────
 Total                                      ~19 hours
 ```
+
+---
+
+## 🌐 Live Deployment
+
+The application is deployed on **Azure App Service**.
+
+🔗 **[https://taskflow-shreyas-svd2026-c9bbcsezbmbjbvbu.centralindia-01.azurewebsites.net/](https://taskflow-shreyas-svd2026-c9bbcsezbmbjbvbu.centralindia-01.azurewebsites.net/)**
+
+Use the demo credentials below to log in as either an Admin or an Employee.
 
 ---
 
@@ -371,7 +351,6 @@ TaskFlow/
 ## 👤 Author
 
 **Shreyas Vikrant Dewangswami**
-Final-year Information Science & Engineering student, Ramaiah Institute of Technology, Bengaluru
 
 ---
 
