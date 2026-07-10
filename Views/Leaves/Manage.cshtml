@@ -1,0 +1,80 @@
+@model TaskFlow.ViewModels.LeaveListViewModel
+@{
+    ViewData["Title"] = "Manage Leave Requests";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-calendar-check me-2"></i>Manage Leave Requests</h2>
+    <p>Review, approve, or reject employee leave requests</p>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form method="get" class="search-bar">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small">Search</label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Employee name or reason..." />
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small">Status</label>
+                    <select name="statusFilter" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.LeaveStatus>()">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i> Filter</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var leave in Model.LeaveRequests)
+                    {
+                        <tr>
+                            <td>@leave.EmployeeName</td>
+                            <td>@leave.LeaveType</td>
+                            <td>@leave.StartDate.ToString("MMM dd, yyyy")</td>
+                            <td>@leave.EndDate.ToString("MMM dd, yyyy")</td>
+                            <td>@leave.Reason</td>
+                            <td><span class="badge badge-leave-@leave.Status.ToString().ToLower()">@leave.Status</span></td>
+                            <td>@leave.AppliedOn.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (leave.Status == TaskFlow.Models.LeaveStatus.Pending)
+                                {
+                                    <a asp-action="Review" asp-route-id="@leave.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye me-1"></i> Review
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">@(leave.AdminComment ?? "Processed")</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            ViewBag.Search = Model.Search;
+            ViewBag.StatusFilter = Model.StatusFilter;
+        }
+        <partial name="_Pagination" model="Model.LeaveRequests" />
+    </div>
+</div>

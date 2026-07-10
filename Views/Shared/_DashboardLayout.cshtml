@@ -1,0 +1,131 @@
+@using TaskFlow.Helpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TaskFlow</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <a asp-controller="Dashboard" asp-action="Index" class="sidebar-brand">
+                    <i class="bi bi-kanban-fill me-2"></i>TaskFlow
+                </a>
+            </div>
+            <ul class="list-unstyled sidebar-menu">
+                <li>
+                    <a asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                @if (User.IsInRole(RoleNames.Admin))
+                {
+                    <li class="sidebar-section">Administration</li>
+                    <li>
+                        <a asp-controller="Employees" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Employees" ? "active" : "")">
+                            <i class="bi bi-people"></i> Employees
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Tasks" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Tasks" && ViewContext.RouteData.Values["action"]?.ToString() != "MyTasks" ? "active" : "")">
+                            <i class="bi bi-list-task"></i> Tasks
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Leaves" asp-action="Manage" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Leaves" && ViewContext.RouteData.Values["action"]?.ToString() == "Manage" ? "active" : "")">
+                            <i class="bi bi-calendar-check"></i> Leave Requests
+                        </a>
+                    </li>
+                }
+                @if (User.IsInRole(RoleNames.Employee))
+                {
+                    <li class="sidebar-section">My Work</li>
+                    <li>
+                        <a asp-controller="Tasks" asp-action="MyTasks" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyTasks" ? "active" : "")">
+                            <i class="bi bi-check2-square"></i> My Tasks
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Leaves" asp-action="Apply" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Apply" ? "active" : "")">
+                            <i class="bi bi-calendar-plus"></i> Apply Leave
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Leaves" asp-action="History" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "History" ? "active" : "")">
+                            <i class="bi bi-clock-history"></i> Leave History
+                        </a>
+                    </li>
+                }
+                <li class="sidebar-section">Account</li>
+                <li>
+                    <a asp-controller="Profile" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="bi bi-person"></i> Profile
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Profile" asp-action="Edit" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Edit" && ViewContext.RouteData.Values["controller"]?.ToString() == "Profile" ? "active" : "")">
+                        <i class="bi bi-pencil-square"></i> Edit Profile
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="content" class="content">
+            <nav class="navbar navbar-expand-lg top-navbar">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarToggle" class="btn btn-link text-white d-lg-none">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+                    <span class="navbar-text text-white d-none d-md-inline">
+                        Welcome, <strong>@User.Identity?.Name</strong>
+                    </span>
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        @if (User.IsInRole(RoleNames.Admin))
+                        {
+                            <span class="badge bg-warning text-dark">Admin</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-dark">Employee</span>
+                        }
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="main-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,86 @@
+@model TaskFlow.ViewModels.EmployeeListViewModel
+@{
+    ViewData["Title"] = "Manage Employees";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-people me-2"></i>Manage Employees</h2>
+    <p>View and manage registered employees</p>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form method="get" class="search-bar">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-10">
+                    <label class="form-label small">Search</label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Name, email, or department..." />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i> Search</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Join Date</th>
+                        <th>Tasks</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var employee in Model.Employees)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@employee.FullName</td>
+                            <td>@employee.Email</td>
+                            <td>@employee.Department</td>
+                            <td>@employee.JoinDate.ToString("MMM dd, yyyy")</td>
+                            <td><span class="badge bg-info text-dark">@employee.TaskCount</span></td>
+                            <td>
+                                @if (employee.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="ToggleActive" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@employee.Id" />
+                                    @if (employee.IsActive)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deactivate this employee?');">
+                                            <i class="bi bi-person-x"></i> Deactivate
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-person-check"></i> Activate
+                                        </button>
+                                    }
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            ViewBag.Search = Model.Search;
+        }
+        <partial name="_Pagination" model="Model.Employees" />
+    </div>
+</div>

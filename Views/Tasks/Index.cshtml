@@ -1,0 +1,87 @@
+@model TaskFlow.ViewModels.TaskListViewModel
+@{
+    ViewData["Title"] = "Manage Tasks";
+}
+
+<div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+        <h2><i class="bi bi-list-task me-2"></i>Manage Tasks</h2>
+        <p>Create, assign, and manage all tasks</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Create Task
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form method="get" class="search-bar">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small">Search</label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Title, description, assignee..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Status</label>
+                    <select name="statusFilter" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskStatus>()">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Priority</label>
+                    <select name="priorityFilter" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskPriority>()">
+                        <option value="">All Priorities</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Assigned To</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var task in Model.Tasks)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@task.Id" class="text-decoration-none fw-semibold">@task.Title</a>
+                            </td>
+                            <td>@(task.AssignedToName ?? "Unassigned")</td>
+                            <td><span class="badge badge-priority-@task.Priority.ToString().ToLower()">@task.Priority</span></td>
+                            <td><span class="badge badge-status-@task.Status.ToString().ToLower()">@task.Status</span></td>
+                            <td>@task.DueDate.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Edit" asp-route-id="@task.Id" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="Assign" asp-route-id="@task.Id" class="btn btn-outline-info" title="Assign"><i class="bi bi-person-plus"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@task.Id" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            ViewBag.Search = Model.Search;
+            ViewBag.StatusFilter = Model.StatusFilter;
+            ViewBag.PriorityFilter = Model.PriorityFilter;
+        }
+        <partial name="_Pagination" model="Model.Tasks" />
+    </div>
+</div>

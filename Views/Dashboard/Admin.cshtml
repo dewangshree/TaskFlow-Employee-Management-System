@@ -1,0 +1,165 @@
+@model TaskFlow.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h2>
+    <p>Overview of employees, tasks, and leave requests</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-primary-soft"><i class="bi bi-people"></i></div>
+                <div>
+                    <div class="stat-value">@Model.TotalEmployees</div>
+                    <div class="stat-label">Total Employees</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-info-soft"><i class="bi bi-list-task"></i></div>
+                <div>
+                    <div class="stat-value">@Model.TotalTasks</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="stat-value">@Model.PendingTasks</div>
+                    <div class="stat-label">Pending Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value">@Model.CompletedTasks</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-warning-soft"><i class="bi bi-calendar-event"></i></div>
+                <div>
+                    <div class="stat-value">@Model.PendingLeaveRequests</div>
+                    <div class="stat-label">Pending Leave Requests</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success-soft"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="stat-value">@Model.ApprovedLeaveRequests</div>
+                    <div class="stat-label">Approved Leave Requests</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-list-task me-2"></i>Recent Tasks</span>
+                <a asp-controller="Tasks" asp-action="Index" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var task in Model.RecentTasks)
+                            {
+                                <tr>
+                                    <td>@task.Title</td>
+                                    <td><span class="badge badge-priority-@task.Priority.ToString().ToLower()">@task.Priority</span></td>
+                                    <td><span class="badge badge-status-@task.Status.ToString().ToLower()">@task.Status</span></td>
+                                    <td>@task.DueDate.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-check me-2"></i>Recent Leave Requests</span>
+                <a asp-controller="Leaves" asp-action="Manage" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Applied</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var leave in Model.RecentLeaveRequests)
+                            {
+                                <tr>
+                                    <td>@leave.EmployeeName</td>
+                                    <td>@leave.LeaveType</td>
+                                    <td><span class="badge badge-leave-@leave.Status.ToString().ToLower()">@leave.Status</span></td>
+                                    <td>@leave.AppliedOn.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-2">
+    <div class="col-auto">
+        <a asp-controller="Tasks" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Create Task
+        </a>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="Employees" asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-people me-1"></i> Manage Employees
+        </a>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="Leaves" asp-action="Manage" class="btn btn-outline-primary">
+            <i class="bi bi-calendar-check me-1"></i> Manage Leaves
+        </a>
+    </div>
+</div>

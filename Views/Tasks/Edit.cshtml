@@ -1,0 +1,28 @@
+@model TaskFlow.ViewModels.TaskItemViewModel
+@{
+    ViewData["Title"] = "Edit Task";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-pencil me-2"></i>Edit Task</h2>
+    <p>Update task details and assignment</p>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+            <partial name="_TaskForm" model="Model" />
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Save Changes</button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

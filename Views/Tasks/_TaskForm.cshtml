@@ -1,0 +1,33 @@
+@model TaskFlow.ViewModels.TaskItemViewModel
+
+<div class="row g-3">
+    <div class="col-md-8">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="field-validation-error"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="AssignedToId" class="form-label"></label>
+        <select asp-for="AssignedToId" class="form-select" asp-items="ViewBag.Employees">
+            <option value="">-- Unassigned --</option>
+        </select>
+    </div>
+    <div class="col-12">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Description" class="field-validation-error"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Priority" class="form-label"></label>
+        <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskPriority>()"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskStatus>()"></select>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="DueDate" class="form-label"></label>
+        <input asp-for="DueDate" class="form-control" type="date" />
+        <span asp-validation-for="DueDate" class="field-validation-error"></span>
+    </div>
+</div>

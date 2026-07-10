@@ -1,0 +1,40 @@
+@model TaskFlow.Helpers.IPagedList
+
+@if (Model.TotalPages > 1)
+{
+    var routeValues = ViewContext.RouteData.Values.ToDictionary(k => k.Key, v => v.Value?.ToString() ?? "");
+    if (ViewBag.Search != null) routeValues["search"] = ViewBag.Search;
+    if (ViewBag.StatusFilter != null) routeValues["statusFilter"] = ViewBag.StatusFilter?.ToString();
+    if (ViewBag.PriorityFilter != null) routeValues["priorityFilter"] = ViewBag.PriorityFilter?.ToString();
+
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                @{
+                    routeValues["page"] = (Model.PageIndex - 1).ToString();
+                }
+                <a class="page-link" asp-all-route-data="routeValues">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                routeValues["page"] = i.ToString();
+                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                    <a class="page-link" asp-all-route-data="routeValues">@i</a>
+                </li>
+            }
+            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                @{
+                    routeValues["page"] = (Model.PageIndex + 1).ToString();
+                }
+                <a class="page-link" asp-all-route-data="routeValues">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+        <p class="text-center text-muted small mt-2">
+            Showing page @Model.PageIndex of @Model.TotalPages (@Model.TotalCount total records)
+        </p>
+    </nav>
+}

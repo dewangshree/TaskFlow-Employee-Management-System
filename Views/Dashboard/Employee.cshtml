@@ -1,0 +1,156 @@
+@model TaskFlow.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-speedometer2 me-2"></i>Welcome, @Model.UserName!</h2>
+    <p>Your tasks and leave overview</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-info-soft"><i class="bi bi-list-task"></i></div>
+                <div>
+                    <div class="stat-value">@Model.TotalTasks</div>
+                    <div class="stat-label">Assigned Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-warning-soft"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="stat-value">@Model.PendingTasks</div>
+                    <div class="stat-label">Pending Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-success-soft"><i class="bi bi-check-circle"></i></div>
+                <div>
+                    <div class="stat-value">@Model.CompletedTasks</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-warning-soft"><i class="bi bi-calendar-event"></i></div>
+                <div>
+                    <div class="stat-value">@Model.PendingLeaveRequests</div>
+                    <div class="stat-label">Pending Leaves</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-check2-square me-2"></i>My Recent Tasks</span>
+                <a asp-controller="Tasks" asp-action="MyTasks" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentTasks.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in Model.RecentTasks)
+                                {
+                                    <tr>
+                                        <td>@task.Title</td>
+                                        <td><span class="badge badge-priority-@task.Priority.ToString().ToLower()">@task.Priority</span></td>
+                                        <td><span class="badge badge-status-@task.Status.ToString().ToLower()">@task.Status</span></td>
+                                        <td>@task.DueDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <a asp-controller="Tasks" asp-action="UpdateStatus" asp-route-id="@task.Id" class="btn btn-sm btn-outline-primary">
+                                                Update
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted p-4 mb-0">No tasks assigned yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Recent Leave Requests</span>
+                <a asp-controller="Leaves" asp-action="History" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentLeaveRequests.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Dates</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var leave in Model.RecentLeaveRequests)
+                                {
+                                    <tr>
+                                        <td>@leave.LeaveType</td>
+                                        <td>@leave.StartDate.ToString("MMM dd") - @leave.EndDate.ToString("MMM dd")</td>
+                                        <td><span class="badge badge-leave-@leave.Status.ToString().ToLower()">@leave.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted p-4 mb-0">No leave requests yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-2">
+    <div class="col-auto">
+        <a asp-controller="Leaves" asp-action="Apply" class="btn btn-primary">
+            <i class="bi bi-calendar-plus me-1"></i> Apply for Leave
+        </a>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="Tasks" asp-action="MyTasks" class="btn btn-outline-primary">
+            <i class="bi bi-check2-square me-1"></i> View My Tasks
+        </a>
+    </div>
+</div>

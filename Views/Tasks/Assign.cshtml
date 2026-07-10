@@ -1,0 +1,35 @@
+@model TaskFlow.ViewModels.AssignTaskViewModel
+@{
+    ViewData["Title"] = "Assign Task";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-person-plus me-2"></i>Assign Task</h2>
+    <p>Assign "@Model.TaskTitle" to an employee</p>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form asp-action="Assign" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="TaskId" />
+            <input type="hidden" asp-for="TaskTitle" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="AssignedToId" class="form-label"></label>
+                <select asp-for="AssignedToId" class="form-select" asp-items="ViewBag.Employees">
+                    <option value="">-- Select Employee --</option>
+                </select>
+                <span asp-validation-for="AssignedToId" class="field-validation-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Assign Task</button>
+            <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

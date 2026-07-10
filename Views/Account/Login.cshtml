@@ -1,0 +1,63 @@
+@model TaskFlow.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container px-3">
+    <div class="auth-card mx-auto">
+        <div class="auth-header">
+            <i class="bi bi-kanban-fill fs-1 mb-2"></i>
+            <h1>TaskFlow</h1>
+            <p class="mb-0 opacity-75">Employee Task & Leave Management</p>
+        </div>
+        <div class="auth-body-content">
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Email" class="form-control" placeholder="you@company.com" />
+                    </div>
+                    <span asp-validation-for="Email" class="field-validation-error"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input asp-for="Password" class="form-control" placeholder="Enter password" />
+                    </div>
+                    <span asp-validation-for="Password" class="field-validation-error"></span>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label"></label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <span class="text-muted">Don't have an account?</span>
+                <a asp-action="Register" class="auth-link ms-1">Register</a>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded small">
+                <strong>Demo Accounts:</strong><br />
+                Admin: admin@taskflow.com / Admin@123<br />
+                Employee: john.doe@taskflow.com / Employee@123
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

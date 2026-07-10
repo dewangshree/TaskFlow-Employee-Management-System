@@ -1,0 +1,78 @@
+@model TaskFlow.ViewModels.TaskListViewModel
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<div class="page-header">
+    <h2><i class="bi bi-check2-square me-2"></i>My Tasks</h2>
+    <p>View and update your assigned tasks</p>
+</div>
+
+<div class="content-card">
+    <div class="card-body">
+        <form method="get" class="search-bar">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small">Search</label>
+                    <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Search tasks..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Status</label>
+                    <select name="statusFilter" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskStatus>()">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Priority</label>
+                    <select name="priorityFilter" class="form-select" asp-items="Html.GetEnumSelectList<TaskFlow.Models.TaskPriority>()">
+                        <option value="">All Priorities</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                        <th>Created By</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var task in Model.Tasks)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@task.Title</td>
+                            <td><span class="badge badge-priority-@task.Priority.ToString().ToLower()">@task.Priority</span></td>
+                            <td><span class="badge badge-status-@task.Status.ToString().ToLower()">@task.Status</span></td>
+                            <td>@task.DueDate.ToString("MMM dd, yyyy")</td>
+                            <td>@task.CreatedByName</td>
+                            <td>
+                                <a asp-action="UpdateStatus" asp-route-id="@task.Id" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Update Status
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            ViewBag.Search = Model.Search;
+            ViewBag.StatusFilter = Model.StatusFilter;
+            ViewBag.PriorityFilter = Model.PriorityFilter;
+        }
+        <partial name="_Pagination" model="Model.Tasks" />
+    </div>
+</div>
