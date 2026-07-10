@@ -1,34 +1,224 @@
-# TaskFlow — Employee Management System
+<div align="center">
 
-TaskFlow is a full-stack, role-based Employee Management System built with **ASP.NET Core MVC**. It gives organizations a single dashboard to manage employees, assign and track tasks, and handle leave requests — with separate, permission-scoped experiences for **Admins** and **Employees**.
+# 🗂️ TaskFlow — Employee Management System
 
-<p align="left">
-  <img src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 10">
-  <img src="https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white" alt="ASP.NET Core MVC">
-  <img src="https://img.shields.io/badge/Entity%20Framework%20Core-10.0-blue" alt="EF Core">
-  <img src="https://img.shields.io/badge/Database-SQLite-07405E?logo=sqlite&logoColor=white" alt="SQLite">
-  <img src="https://img.shields.io/badge/Auth-ASP.NET%20Identity-005571" alt="ASP.NET Identity">
-  <img src="https://img.shields.io/badge/UI-Bootstrap-7952B3?logo=bootstrap&logoColor=white" alt="Bootstrap">
-</p>
+### Role-Based · Secure · Full-Stack ASP.NET Core MVC Application
 
----
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![EF Core](https://img.shields.io/badge/Entity%20Framework%20Core-10.0-4CAF50?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/Database-SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+![Identity](https://img.shields.io/badge/Auth-ASP.NET%20Identity-005571?style=for-the-badge)
+![Bootstrap](https://img.shields.io/badge/UI-Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
-## Overview
+TaskFlow is a role-based Employee Management System that lets **Admins** manage employees, assign and track tasks, and approve leave — while **Employees** get a scoped, permission-limited workspace to manage their own tasks and leave requests. Authorization is enforced at the controller level with ASP.NET Core Identity, and all business data is modeled relationally through EF Core.
 
-TaskFlow simplifies day-to-day HR and project-tracking workflows by centralizing three core functions in one application:
-
-- **Employee management** — maintain profiles, departments, and account status
-- **Task management** — create, assign, prioritize, and track tasks to completion
-- **Leave management** — employees apply for leave, admins review and approve/reject with comments
-
-The application uses **cookie-based authentication with role-based authorization** (Admin / Employee), so each user only sees the screens and actions relevant to their role.
+</div>
 
 ---
 
-## Screenshots
+## 📋 Table of Contents
+
+- [System Overview](#-system-overview)
+- [End-to-End System Flow](#-end-to-end-system-flow)
+- [Database Relationship Model](#-database-relationship-model)
+- [Security Model — Role-Based Authorization](#-security-model--role-based-authorization)
+- [Authentication Flow](#-authentication-flow)
+- [Dashboard Aggregation Flow](#-dashboard-aggregation-flow)
+- [Screenshots](#-screenshots)
+- [Key Engineering Decisions](#-key-engineering-decisions)
+- [Challenges & Solutions](#-challenges--solutions)
+- [Time Investment](#-time-investment)
+- [Local Setup](#-local-setup)
+- [Project Structure](#-project-structure)
+- [What This Project Demonstrates](#-what-this-project-demonstrates)
+
+---
+
+## 🔷 System Overview
+
+> TaskFlow gives Admins full oversight of the workforce — employees, tasks, and leave — while Employees get a scoped self-service view limited to their own work and requests.
+
+| Feature | Implementation |
+|---|---|
+| Authentication | ASP.NET Core Identity (cookie-based sessions) |
+| Authorization | Role-based, enforced per-controller/action (`Admin`, `Employee`) |
+| Data Access | Entity Framework Core (Code-First, migrations) |
+| Database | SQLite |
+| Frontend | Razor Views + Bootstrap + jQuery |
+| Architecture | MVC (Controllers → Services → EF Core → SQLite) |
+
+---
+
+## 🔁 End-to-End System Flow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                           USER                                │
+│               Admin or Employee (Web Browser)                 │
+└──────────────────────────┬────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                         │
+│  • Razor Views (per role/feature)                              │
+│  • Bootstrap UI + jQuery Validation                            │
+└──────────────────────────┬────────────────────────────────────┘
+                            │  HTTP Request + Auth Cookie
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                     MVC CONTROLLER LAYER                       │
+│  • [Authorize] / [Authorize(Roles = ...)] guards                │
+│  • Employees, Tasks, Leaves, Dashboard, Profile, Account         │
+└──────────────────────────┬────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      SERVICE LAYER                              │
+│  • DashboardService (aggregates counts & recent activity)        │
+└──────────────────────────┬────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                  DATA ACCESS LAYER (EF Core)                    │
+│  • AppDbContext (IdentityDbContext<ApplicationUser>)             │
+│  • TaskItems, LeaveRequests, Users, Roles                        │
+└──────────────────────────┬────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      SQLITE DATABASE                             │
+│  • Relational storage, migration-managed schema                  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🗄 Database Relationship Model
+
+```
+AspNetUsers (ApplicationUser)  (1)
+    │
+    ├── AssignedTasks  (*)  ──►  TaskItems.AssignedToId   [SetNull on delete]
+    ├── CreatedTasks   (*)  ──►  TaskItems.CreatedById    [Restrict on delete]
+    └── LeaveRequests  (*)  ──►  LeaveRequests.EmployeeId [Cascade on delete]
+```
+
+**Core entities:**
+
+```csharp
+ApplicationUser : IdentityUser
+    ├── FirstName, LastName, Department, JoinDate, IsActive
+    ├── AssignedTasks : ICollection<TaskItem>
+    ├── CreatedTasks  : ICollection<TaskItem>
+    └── LeaveRequests : ICollection<LeaveRequest>
+
+TaskItem
+    ├── Title, Description, Priority, Status, DueDate, CreatedAt
+    ├── AssignedToId → ApplicationUser (nullable, SetNull on delete)
+    └── CreatedById   → ApplicationUser (required, Restrict on delete)
+
+LeaveRequest
+    ├── LeaveType, StartDate, EndDate, Reason, Status, AppliedOn
+    ├── AdminComment (set on approve/reject)
+    └── EmployeeId → ApplicationUser (Cascade on delete)
+```
+
+> A task can be unassigned (employee deactivated/removed) but never loses its creator — enforced via `DeleteBehavior.SetNull` vs. `DeleteBehavior.Restrict`. Leave requests are tied to their employee's lifecycle via `DeleteBehavior.Cascade`.
+
+---
+
+## 🔐 Security Model — Role-Based Authorization
+
+Every controller and action is explicitly guarded — there is no reliance on hiding UI elements alone.
+
+```
+[Authorize]                              → any authenticated user
+[Authorize(Roles = RoleNames.Admin)]     → Admin-only actions
+[Authorize(Roles = RoleNames.Employee)]  → Employee-only actions
+```
+
+| Controller  | Admin-only actions | Employee-only actions |
+|---|---|---|
+| `EmployeesController` | Full CRUD on employee records | — |
+| `TasksController`     | Create, assign, edit, delete any task | Apply for a task, update own task status |
+| `LeavesController`    | Approve / reject with comment, view all requests | Apply for leave, view own leave history |
+| `DashboardController` | Org-wide aggregated dashboard | Personal dashboard scoped to own data |
+
+```
+✅ Employees can never view or modify another employee's tasks or leave
+✅ Admins get organization-wide visibility; Employees get self-service only
+✅ Enforcement happens server-side on every controller action, not just in the UI
+✅ Password policy enforced via ASP.NET Identity (upper/lower/digit/special char, min length 6)
+```
+
+---
+
+## 🔑 Authentication Flow
+
+```
+User submits Login form (email + password)
+            │
+            ▼
+    AccountController (Login action)
+            │
+            ▼
+    ASP.NET Core Identity (SignInManager)
+            │
+            ▼
+    Credentials validated against AspNetUsers (hashed)
+            │
+            ▼
+    Auth cookie issued (8-hour sliding expiration)
+            │
+            ▼
+    Role claims (Admin / Employee) attached to identity
+            │
+            ▼
+    Subsequent requests authorized via [Authorize] attributes
+```
+
+> No third-party auth provider — credentials are hashed and managed entirely through ASP.NET Core Identity's built-in `UserManager` / `SignInManager`.
+
+---
+
+## 📊 Dashboard Aggregation Flow
+
+```
+Request hits DashboardController
+            │
+            ▼
+    Is user in Admin role?
+       │              │
+      Yes             No
+       │              │
+       ▼              ▼
+GetAdminDashboardAsync()   GetEmployeeDashboardAsync(userId)
+       │                          │
+       ▼                          ▼
+Counts across ALL:          Counts scoped to
+• Employees                 the current user's:
+• Tasks (total/pending/     • Tasks
+  completed)                • Leave requests
+• Leave requests
+       │                          │
+       └──────────┬───────────────┘
+                   ▼
+      Top 5 recent tasks + top 5 recent
+      leave requests (ordered by date)
+                   ▼
+      Rendered to role-specific dashboard view
+```
+
+> A single `DashboardService` serves both roles — the query scope (org-wide vs. user-scoped) is the only thing that changes, keeping the aggregation logic in one place.
+
+---
+
+## 🖼 Screenshots
 
 ### Admin Dashboard
-A real-time overview of employees, tasks, and leave requests, with quick access to recent activity.
+Live counts for employees, tasks, and leave requests, plus recent activity feeds.
 
 ![Admin Dashboard](screenshots/admin-dashboard.png)
 
@@ -38,71 +228,79 @@ Create, assign, filter, and update tasks by priority, status, and due date.
 ![Manage Tasks](screenshots/manage-tasks.png)
 
 ### Leave Request Management
-Review, approve, or reject employee leave requests with search and status filters.
+Search, filter, and approve/reject employee leave requests with an admin comment.
 
 ![Manage Leave Requests](screenshots/manage-leave-requests.png)
 
 ### Profile Management
-Users can update their personal details and change their password securely.
+Update personal details or change password securely.
 
 ![Edit Profile](screenshots/edit-profile.png)
 
 ---
 
-## Key Features
+## 🧠 Key Engineering Decisions
 
-**Authentication & Authorization**
-- Secure login/registration powered by ASP.NET Core Identity
-- Role-based access control (`Admin`, `Employee`)
-- Enforced password policy (uppercase, lowercase, digit, special character)
-
-**Admin Capabilities**
-- Dashboard with live counts: total employees, total/pending/completed tasks, pending/approved leaves
-- Full employee CRUD (create, view, update, deactivate)
-- Create, assign, edit, and delete tasks with priority (Low/Medium/High/Critical) and status (Pending/In Progress/Completed/Cancelled) tracking
-- Review, approve, or reject leave requests with an admin comment and audit trail
-- Search and filter across tasks and leave requests
-
-**Employee Capabilities**
-- Personal dashboard of assigned tasks and leave history
-- Apply for leave (Casual, Sick, Annual, Unpaid) and track approval status
-- Update task progress
-- Edit personal profile and change password
+| Decision | Rationale |
+|---|---|
+| Server-side `[Authorize]` on every action | Authorization can't be bypassed by hiding UI — enforced at the controller, not the view |
+| Single `DashboardService` for both roles | Avoids duplicated aggregation logic; scope is parameterized, not re-implemented |
+| `DeleteBehavior.SetNull` vs. `Restrict` vs. `Cascade` | Chosen per relationship to reflect real business rules (a task survives an employee's removal; a leave request doesn't) |
+| SQLite for the data layer | Zero-config, file-based database — ideal for a self-contained demo/portfolio deployment |
+| Code-First EF Core migrations | Schema is version-controlled and reproducible via `dotnet ef database update` |
+| `PaginatedList<T>` helper | Reusable, generic pagination across Tasks and Leave Requests tables instead of duplicating `Skip/Take` logic |
+| Seeded demo data (`DbSeeder`) | Reviewers/recruiters can run the app immediately with realistic sample data — no manual setup required |
 
 ---
 
-## Tech Stack
+## 🛠 Challenges & Solutions
 
-| Layer          | Technology                                              |
-|----------------|----------------------------------------------------------|
-| Framework      | ASP.NET Core MVC (.NET 10)                                |
-| Language       | C#                                                        |
-| ORM            | Entity Framework Core 10 (Code-First + Migrations)         |
-| Database       | SQLite                                                     |
-| Auth           | ASP.NET Core Identity (cookie-based, role-based)            |
-| Frontend       | Razor Views, Bootstrap, jQuery, jQuery Validation           |
-| Architecture   | MVC (Controllers / Models / ViewModels / Services / Views)  |
-
----
-
-## Project Structure
+**1. Preventing role-based data leakage**
 
 ```
-TaskFlow/
-├── Controllers/        # Account, Dashboard, Employees, Leaves, Tasks, Profile, Home
-├── Data/                # AppDbContext (EF Core)
-├── Helpers/             # RoleNames, PaginatedList
-├── Migrations/          # EF Core database migrations
-├── Models/              # ApplicationUser, TaskItem, LeaveRequest, Enums
-├── Services/            # DashboardService, DbSeeder (demo data)
-├── ViewModels/          # Strongly typed view models per feature
-├── Views/               # Razor views organized by controller
-└── wwwroot/             # Static assets (CSS, JS, Bootstrap, jQuery)
+Issue:    Employees should never see other employees' tasks or leave requests
+Solution: Scoped every Employee-facing query by the authenticated user's ID
+          at the controller/service level (not filtered client-side)
+```
+
+**2. Modeling task ownership vs. task assignment**
+
+```
+Issue:    A task needs both a "creator" (always an Admin) and an "assignee"
+          (can become null if the employee is removed)
+Solution: Two separate foreign keys (CreatedById, AssignedToId) with
+          different EF Core delete behaviors (Restrict vs. SetNull)
+```
+
+**3. Sharing dashboard logic across two very different views**
+
+```
+Issue:    Admin and Employee dashboards show similar cards but very
+          different data scopes
+Solution: Single DashboardService with GetAdminDashboardAsync() and
+          GetEmployeeDashboardAsync(userId) sharing the same private
+          helper methods for "recent tasks" / "recent leave requests"
 ```
 
 ---
 
-## Getting Started
+## ⏱ Time Investment
+
+```
+Architecture & Data Modeling     ──────────  3 hours
+Identity & Role-Based Auth       ──────────  3 hours
+Task Management Module           ──────────  4 hours
+Leave Management Module          ──────────  3 hours
+Dashboard & Aggregation Logic    ──────────  2 hours
+UI Polish (Bootstrap/Razor)      ──────────  2 hours
+Seeding + Testing + Docs         ──────────  2 hours
+                                 ─────────────────────
+Total                                      ~19 hours
+```
+
+---
+
+## 🚀 Local Setup
 
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download)
@@ -128,22 +326,59 @@ The app will be available at `https://localhost:5198` (or the port shown in your
 
 ### Demo Credentials
 
-On first run, the app seeds an admin account, three employee accounts, and sample tasks/leave requests:
+Seeded automatically on first run:
 
-| Role     | Email                     | Password      |
-|----------|----------------------------|---------------|
-| Admin    | admin@taskflow.com         | Admin@123     |
-| Employee | john.doe@taskflow.com      | Employee@123  |
-| Employee | jane.smith@taskflow.com    | Employee@123  |
-| Employee | mike.johnson@taskflow.com  | Employee@123  |
+| Role     | Email                       | Password      |
+|----------|------------------------------|----------------|
+| Admin    | admin@taskflow.com           | Admin@123      |
+| Employee | john.doe@taskflow.com        | Employee@123   |
+| Employee | jane.smith@taskflow.com      | Employee@123   |
+| Employee | mike.johnson@taskflow.com    | Employee@123   |
 
 ---
 
-## Author
+## 📁 Project Structure
+
+```
+TaskFlow/
+├── Controllers/        # Account, Dashboard, Employees, Leaves, Tasks, Profile, Home
+├── Data/                # AppDbContext (EF Core, IdentityDbContext)
+├── Helpers/             # RoleNames, PaginatedList<T>
+├── Migrations/          # EF Core database migrations
+├── Models/              # ApplicationUser, TaskItem, LeaveRequest, Enums
+├── Services/            # DashboardService, DbSeeder (demo data)
+├── ViewModels/          # Strongly typed view models per feature
+├── Views/               # Razor views organized by controller
+└── wwwroot/             # Static assets (CSS, JS, Bootstrap, jQuery)
+```
+
+---
+
+## ✅ What This Project Demonstrates
+
+```
+✔  Role-based authorization enforced server-side, not just in the UI
+✔  Relational data modeling with EF Core (foreign keys, delete behaviors)
+✔  Clean separation of Controllers → Services → Data Access
+✔  Reusable, generic components (PaginatedList<T>, shared DashboardService)
+✔  ASP.NET Core Identity: hashed credentials, cookie auth, password policy
+✔  Reproducible setup via Code-First migrations + seeded demo data
+✔  Structured, recruiter-readable engineering documentation
+```
+
+---
+
+## 👤 Author
 
 **Shreyas Vikrant Dewangswami**
 Final-year Information Science & Engineering student, Ramaiah Institute of Technology, Bengaluru
 
 ---
 
-*This project was built as a demonstration of full-stack development skills using the ASP.NET Core MVC stack — including authentication, role-based authorization, EF Core data modeling, and CRUD-driven business workflows.*
+<div align="center">
+
+**Built with ASP.NET Core MVC · Entity Framework Core · SQLite · Bootstrap**
+
+⭐ Star this repo if you found it helpful!
+
+</div>
