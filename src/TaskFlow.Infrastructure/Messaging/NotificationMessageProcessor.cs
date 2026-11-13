@@ -70,7 +70,8 @@ public sealed class NotificationMessageProcessor(
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation }
+                                           or Microsoft.Data.Sqlite.SqliteException { SqliteErrorCode: 19 })
         {
             // Another worker instance processed the same message concurrently.
             logger.LogInformation("Concurrent duplicate detected for message {MessageId}", messageId);

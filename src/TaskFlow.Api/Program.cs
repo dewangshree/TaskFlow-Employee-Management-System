@@ -25,6 +25,10 @@ try
         .AddInfrastructure(builder.Configuration)
         .AddApiServices(builder.Configuration, builder.Environment);
 
+    // Single-instance/free hosting: run the background worker inside the API process.
+    if (builder.Configuration.GetValue<bool>("Worker:RunInApi"))
+        builder.Services.AddMessaging(builder.Configuration);
+
     var app = builder.Build();
 
     await DbSeeder.InitializeAsync(
@@ -60,6 +64,10 @@ try
         });
     }
 
+    // Serves the built React app (copied into wwwroot at publish time) from the same origin.
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+
     app.UseAuthentication();
     app.UseRateLimiter(); // after authentication so limits can partition by user id
     app.UseMiddleware<CsrfValidationMiddleware>();
@@ -74,6 +82,10 @@ try
         Predicate = check => check.Tags.Contains("ready"),
         ResponseWriter = HealthCheckResponseWriter.WriteAsync,
     }).AllowAnonymous();
+
+    // SPA client-side routes (/tasks/12, /leaves, ...) fall back to index.html; /api and /health are excluded.
+    if (File.Exists(Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "index.html")))
+        app.MapFallbackToFile("index.html").AllowAnonymous();
 
     await app.RunAsync();
 }

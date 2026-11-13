@@ -13,7 +13,7 @@ namespace TaskFlow.Infrastructure.Messaging;
 /// </summary>
 public sealed class OutboxDispatcher(
     AppDbContext db,
-    RabbitMqPublisher publisher,
+    IOutboxPublisher publisher,
     IOptions<OutboxOptions> options,
     TimeProvider time,
     ILogger<OutboxDispatcher> logger)
@@ -23,9 +23,15 @@ public sealed class OutboxDispatcher(
         var opts = options.Value;
         var now = time.GetUtcNow().UtcDateTime;
 
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        // Postgres: row locks (FOR UPDATE SKIP LOCKED) need a transaction. SQLite allows a single
+        // writer, so holding a transaction here would block the notification writes it triggers.
+        await using var transaction = db.Database.IsNpgsql() ? await db.Database.BeginTransactionAsync(ct) : null;
 
-        var batch = await db.OutboxMessages
+        var batch = !db.Database.IsNpgsql()
+            ? await db.OutboxMessages // SQLite: single instance, the DB write lock serialises access
+                .Where(m => m.ProcessedAt == null && m.Attempts < opts.MaxAttempts && (m.NextAttemptAt == null || m.NextAttemptAt <= now))
+                .OrderBy(m => m.OccurredAt).Take(opts.BatchSize).ToListAsync(ct)
+            : await db.OutboxMessages
             .FromSql($"""
                 SELECT * FROM "OutboxMessages"
                 WHERE "ProcessedAt" IS NULL
@@ -65,7 +71,8 @@ public sealed class OutboxDispatcher(
         }
 
         await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+        if (transaction is not null)
+            await transaction.CommitAsync(ct);
 
         if (published > 0)
             logger.LogInformation("Published {Count} outbox message(s)", published);

@@ -33,7 +33,14 @@ public static class DbSeeder
         var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
         var db = sp.GetRequiredService<AppDbContext>();
 
-        if (applyMigrations)
+        if (!db.Database.IsNpgsql())
+        {
+            // Migrations are PostgreSQL-specific; SQLite fallback creates the schema from the model.
+            await db.Database.EnsureCreatedAsync(ct);
+            // WAL lets readers proceed while a write is in progress.
+            await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", ct);
+        }
+        else if (applyMigrations)
         {
             logger.LogInformation("Applying database migrations");
             await db.Database.MigrateAsync(ct);

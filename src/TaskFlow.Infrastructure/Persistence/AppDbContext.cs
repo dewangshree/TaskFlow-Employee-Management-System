@@ -23,8 +23,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.HasPostgresExtension("pg_trgm");
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        if (Database.IsNpgsql())
+        {
+            builder.HasPostgresExtension("pg_trgm");
+        }
+        else
+        {
+            // SQLite has no xmin: use an application-incremented version column instead
+            // (see BumpVersions), which keeps the same optimistic-concurrency semantics.
+            builder.Entity<TaskItem>().Property(t => t.Version).ValueGeneratedNever().IsConcurrencyToken().HasDefaultValue(0u);
+            builder.Entity<LeaveRequest>().Property(l => l.Version).ValueGeneratedNever().IsConcurrencyToken().HasDefaultValue(0u);
+        }
     }
 
     public void SetExpectedVersion<TEntity>(TEntity entity, uint version) where TEntity : class =>
@@ -38,6 +49,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     /// </summary>
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
+        BumpVersions();
         var aggregates = ChangeTracker.Entries<IHasDomainEvents>()
             .Where(e => e.Entity.HasDomainEvents)
             .Select(e => e.Entity)
@@ -80,6 +92,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         ChangeTracker.Entries<IHasDomainEvents>().Any(e => e.Entity.HasDomainEvents)
             ? throw new InvalidOperationException("Use SaveChangesAsync for aggregates that raise domain events.")
             : base.SaveChanges(acceptAllChangesOnSuccess);
+
+    private void BumpVersions()
+    {
+        if (Database.IsNpgsql()) return; // PostgreSQL maintains xmin itself
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.State == EntityState.Modified && e.Metadata.FindProperty("Version") is not null))
+        {
+            var version = entry.Property("Version");
+            version.CurrentValue = (uint)version.OriginalValue! + 1;
+        }
+    }
 
     private static OutboxMessage ToOutboxMessage(IDomainEvent domainEvent) => new()
     {

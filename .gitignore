@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 # frontend
 frontend/dist/
+src/TaskFlow.Api/wwwroot/
+*.db
+*.db-shm
+*.db-wal

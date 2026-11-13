@@ -62,7 +62,7 @@ public static class ServiceRegistration
         services.AddApiRateLimiting(configuration);
 
         services.AddHealthChecks()
-            .AddDbContextCheck<AppDbContext>("postgres", tags: ["ready"])
+            .AddDbContextCheck<AppDbContext>("database", tags: ["ready"])
             .AddCheck<RedisHealthCheck>("redis", tags: ["ready"])
             .AddCheck<OutboxHealthCheck>("outbox", tags: ["ready"]);
 
@@ -105,7 +105,7 @@ public static class ServiceRegistration
             options.Cookie.Name = "taskflow.auth";
             options.Cookie.HttpOnly = true;
             options.Cookie.SameSite = SameSiteMode.Strict;
-            options.Cookie.SecurePolicy = environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             options.ExpireTimeSpan = TimeSpan.FromHours(8);
             options.SlidingExpiration = true;
 
@@ -130,7 +130,7 @@ public static class ServiceRegistration
             options.HeaderName = CsrfProtection.HeaderName;
             options.Cookie.Name = "taskflow.antiforgery";
             options.Cookie.SameSite = SameSiteMode.Strict;
-            options.Cookie.SecurePolicy = environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         });
 
         services.AddAuthorizationBuilder()

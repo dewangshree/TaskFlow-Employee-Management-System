@@ -1,7 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TaskFlow.Infrastructure.Messaging;
 
-namespace TaskFlow.Worker;
+namespace TaskFlow.Infrastructure.Messaging.Hosting;
 
 /// <summary>Polls the transactional outbox and publishes pending events to RabbitMQ.</summary>
 public sealed class OutboxPublisherService(IServiceScopeFactory scopes, IOptions<OutboxOptions> options, ILogger<OutboxPublisherService> logger)

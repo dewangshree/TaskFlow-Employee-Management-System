@@ -26,6 +26,7 @@ services:
       Seed__EmployeePassword: "${SEED_EMPLOYEE_PASSWORD}"
       ReverseProxy__Enabled: "true"
       OpenApi__Enabled: "true"
+      Worker__RunInApi: "false"
     ports: ["5080:8080"]
     depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
   worker:

@@ -10,7 +10,7 @@ namespace TaskFlow.Infrastructure.Messaging;
 /// only returns after the broker has durably accepted the message, so the outbox row
 /// is marked processed only when delivery to a queue is guaranteed.
 /// </summary>
-public sealed class RabbitMqPublisher(RabbitMqConnection connection, IOptions<RabbitMqOptions> options) : IAsyncDisposable
+public sealed class RabbitMqPublisher(RabbitMqConnection connection, IOptions<RabbitMqOptions> options) : IOutboxPublisher, IAsyncDisposable
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private IChannel? _channel;

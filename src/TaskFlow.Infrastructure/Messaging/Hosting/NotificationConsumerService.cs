@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -6,7 +9,7 @@ using Serilog.Context;
 using TaskFlow.Infrastructure.Messaging;
 using TaskFlow.Infrastructure.Observability;
 
-namespace TaskFlow.Worker;
+namespace TaskFlow.Infrastructure.Messaging.Hosting;
 
 /// <summary>
 /// Consumes integration events and creates in-app notifications.

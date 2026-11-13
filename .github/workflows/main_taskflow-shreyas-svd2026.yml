@@ -23,11 +23,25 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build React frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy frontend into API wwwroot
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src/TaskFlow.Api/wwwroot | Out-Null
+          Copy-Item -Recurse -Force frontend/dist/* src/TaskFlow.Api/wwwroot/
+
+      - name: dotnet publish API (serves the SPA, runs the worker in-process, SQLite fallback when no Postgres is configured)
+        run: dotnet publish src/TaskFlow.Api/TaskFlow.Api.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
